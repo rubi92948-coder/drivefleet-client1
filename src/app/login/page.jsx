@@ -4,7 +4,11 @@ import { useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
-import { HiEye, HiEyeOff } from "react-icons/hi"; // প্রিমিয়াম আইকন
+import { HiEye, HiEyeOff } from "react-icons/hi";
+import { FcGoogle } from "react-icons/fc"; // Google আইকন
+import { createAuthClient } from "better-auth/react";
+
+const authClient = createAuthClient();
 
 const Login = () => {
   const router = useRouter();
@@ -16,6 +20,7 @@ const Login = () => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  // ইমেইল দিয়ে লগইন
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -32,6 +37,18 @@ const Login = () => {
     }
   };
 
+  // Google দিয়ে লগইন
+  const handleGoogleLogin = async () => {
+    try {
+      await authClient.signIn.social({
+        provider: "google",
+        callbackURL: "/", // লগইন সফল হলে যেখানে রিডাইরেক্ট হবে
+      });
+    } catch (err) {
+      toast.error("Google Login failed");
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#020617] text-white px-4">
       <form
@@ -40,6 +57,20 @@ const Login = () => {
       >
         <h1 className="text-4xl font-extrabold mb-2 text-center text-white">Welcome Back</h1>
         <p className="text-gray-400 text-center mb-8">Please enter your details to log in.</p>
+
+        {/* Google Login Button */}
+        <button
+          type="button"
+          onClick={handleGoogleLogin}
+          className="w-full mb-6 flex items-center justify-center gap-3 py-3 rounded-xl border border-slate-700 hover:bg-slate-800 transition-all font-semibold"
+        >
+          <FcGoogle className="text-2xl" /> Continue with Google
+        </button>
+
+        <div className="relative flex items-center justify-center mb-6">
+          <div className="absolute w-full border-t border-slate-700"></div>
+          <span className="bg-[#0f172a] px-3 text-gray-500 text-sm z-10">OR</span>
+        </div>
 
         <input
           name="email"

@@ -1,33 +1,32 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { createAuthClient } from "better-auth/react";
+
+// Auth client ইনিশিয়ালাইজ করুন
+const auth = createAuthClient();
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);
-  const [user, setUser] = useState(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-
+  
+  // better-auth থেকে সেশন ডাটা নিচ্ছি
+  const { data: session } = auth.useSession();
+  
   const pathname = usePathname();
   const router = useRouter();
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const loggedUser = JSON.parse(localStorage.getItem("user"));
-      setUser(loggedUser);
-    }
-  }, [pathname]);
-
-  const handleLogout = () => {
-    localStorage.removeItem("user");
-    setUser(null);
+  const handleLogout = async () => {
+    await auth.signOut(); // সার্ভার থেকে সাইনআউট
+    localStorage.removeItem("user"); 
     setDropdownOpen(false);
     setOpen(false);
     router.push("/");
+    router.refresh();
   };
 
-  // Ei function-ti ekhon Register button er jonno o kaj korbe
   const getLinkClass = (path) => {
     const baseClass = "px-4 py-2 rounded-lg transition-colors";
     return pathname === path 
@@ -39,7 +38,6 @@ const Navbar = () => {
     <nav className="bg-black text-white border-b border-gray-800 relative z-50">
       <div className="max-w-7xl mx-auto flex justify-between items-center px-4 py-3">
         
-          
         {/* LOGO */}
         <Link href="/" className="flex items-center gap-2 group">
           <div className="relative w-9 h-9 bg-gradient-to-br from-orange-500 via-orange-600 to-amber-600 rounded-xl flex items-center justify-center">
@@ -47,7 +45,6 @@ const Navbar = () => {
           </div>
           <span className="text-2xl font-black text-white">Drive<span className="text-orange-500">Fleet</span></span>
         </Link>
-
 
         {/* DESKTOP MENU */}
         <div className="hidden md:flex items-center gap-1 font-medium">
@@ -57,21 +54,36 @@ const Navbar = () => {
           <Link href="/my-added-cars" className={getLinkClass("/my-added-cars")}>My Added Cars</Link>
           <Link href="/my-bookings" className={getLinkClass("/my-bookings")}>My Bookings</Link>
 
-          {/* Separator */}
           <div className="h-6 w-[1px] bg-gray-700 mx-3"></div>
 
-          {!user ? (
+          {!session ? (
             <div className="flex gap-2 items-center ml-2">
               <Link href="/login" className={getLinkClass("/login")}>LogIn</Link>
-              {/* Register ekhon link hishebe active state pabe */}
               <Link href="/signup" className={getLinkClass("/signup")}>Register</Link>
             </div>
           ) : (
             <div className="relative ml-2">
-              <button onClick={() => setDropdownOpen(!dropdownOpen)} className="bg-gray-800 px-4 py-2 rounded-full">{user.name.split(" ")[0]}</button>
+              <button 
+                onClick={() => setDropdownOpen(!dropdownOpen)} 
+                className="flex items-center gap-2 hover:bg-gray-800 p-1 rounded-full transition-all"
+              >
+                {/* প্রোফাইল ইমেজ বা নাম */}
+                {session.user.image ? (
+                  <img src={session.user.image} alt={session.user.name} className="w-10 h-10 rounded-full border-2 border-orange-500 object-cover" />
+                ) : (
+                  <div className="w-10 h-10 rounded-full bg-orange-600 flex items-center justify-center font-bold text-white border-2 border-orange-500">
+                    {session.user.name?.charAt(0).toUpperCase()}
+                  </div>
+                )}
+              </button>
+              
               {dropdownOpen && (
-                <div className="absolute right-0 mt-2 w-40 bg-gray-900 border border-gray-700 rounded-lg p-2 z-50">
-                  <button onClick={handleLogout} className="text-red-400 w-full text-left p-2 hover:bg-gray-800 rounded">Log Out</button>
+                <div className="absolute right-0 mt-3 w-48 bg-gray-900 border border-gray-700 rounded-xl p-2 shadow-2xl z-50">
+                  <div className="px-4 py-2 text-sm border-b border-gray-700 mb-1">
+                    <p className="font-bold">{session.user.name}</p>
+                    <p className="text-gray-400 text-xs truncate">{session.user.email}</p>
+                  </div>
+                  <button onClick={handleLogout} className="text-red-400 w-full text-left p-2 hover:bg-gray-800 rounded transition">Log Out</button>
                 </div>
               )}
             </div>
@@ -88,10 +100,9 @@ const Navbar = () => {
           <Link href="/" className={getLinkClass("/")} onClick={() => setOpen(false)}>Home</Link>
           <Link href="/explore-cars" className={getLinkClass("/explore-cars")} onClick={() => setOpen(false)}>Explore Cars</Link>
           <Link href="/add-car" className={getLinkClass("/add-car")} onClick={() => setOpen(false)}>Add Car</Link>
-          <Link href="/my-added-cars" className={getLinkClass("/my-added-cars")} onClick={() => setOpen(false)}>My Added Cars</Link>
           <Link href="/my-bookings" className={getLinkClass("/my-bookings")} onClick={() => setOpen(false)}>My Bookings</Link>
-          <Link href="/signup" className={getLinkClass("/signup")} onClick={() => setOpen(false)}>SignUp</Link>
-          <button onClick={handleLogout} className="text-red-500 text-left p-2">Log Out</button>
+          {!session && <Link href="/signup" className={getLinkClass("/signup")} onClick={() => setOpen(false)}>SignUp</Link>}
+          {session && <button onClick={handleLogout} className="text-red-500 text-left p-2 hover:bg-gray-900 rounded">Log Out</button>}
         </div>
       )}
     </nav>

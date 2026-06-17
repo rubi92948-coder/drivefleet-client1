@@ -5,6 +5,11 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { HiEye, HiEyeOff } from "react-icons/hi";
+import { FcGoogle } from "react-icons/fc";
+import { createAuthClient } from "better-auth/react"; // better-auth client import
+
+// authClient ইনিশিয়ালাইজ করুন
+const authClient = createAuthClient();
 
 const Signup = () => {
   const router = useRouter();
@@ -16,6 +21,7 @@ const Signup = () => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  // ইমেইল সাইনআপ
   const handleSignup = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -31,6 +37,18 @@ const Signup = () => {
     }
   };
 
+  // Better Auth এর মাধ্যমে Google সাইন-ইন
+  const handleGoogleSignup = async () => {
+    try {
+      await authClient.signIn.social({
+        provider: "google",
+        callbackURL: "/", // লগইন হওয়ার পর যেখানে পাঠাতে চান
+      });
+    } catch (err) {
+      toast.error("Google Signup failed");
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#020617] text-white px-4 py-10">
       <form
@@ -39,6 +57,20 @@ const Signup = () => {
       >
         <h1 className="text-3xl font-extrabold mb-2 text-center">Create Account</h1>
         <p className="text-gray-400 text-center mb-8">Join DriveFleet today.</p>
+
+        {/* Google Signup বাটন */}
+        <button
+          type="button"
+          onClick={handleGoogleSignup}
+          className="w-full mb-6 flex items-center justify-center gap-3 py-3 rounded-xl border border-slate-700 hover:bg-slate-800 transition-all font-semibold"
+        >
+          <FcGoogle className="text-2xl" /> Continue with Google
+        </button>
+
+        <div className="relative flex items-center justify-center mb-6">
+          <div className="absolute w-full border-t border-slate-700"></div>
+          <span className="bg-[#0f172a] px-3 text-gray-500 text-sm z-10">OR</span>
+        </div>
 
         <div className="space-y-4">
           <input name="name" placeholder="Full Name" onChange={handleChange} className="w-full p-4 rounded-xl bg-[#020617] border border-slate-700 outline-none focus:border-orange-500 transition-all" required />
