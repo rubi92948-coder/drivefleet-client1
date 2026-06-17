@@ -40,7 +40,7 @@ const CarDetails = () => {
     fetchCarDetails();
   }, [id]);
 
-  // ✅ BOOK NOW (ADDED ONLY THIS)
+  // ✅ BOOK NOW
   const handleBookNow = async () => {
     try {
       const user = JSON.parse(localStorage.getItem("user"));
@@ -106,20 +106,26 @@ const CarDetails = () => {
     }
   };
 
-  if (loading)
+  // ✅ SAFE RENDER (IMPORTANT FIX)
+  if (loading || !car) {
     return (
       <div className="min-h-screen bg-[#020617] text-white flex items-center justify-center">
         Loading...
       </div>
     );
+  }
 
   return (
     <div className="bg-[#020617] min-h-screen text-white pt-24 px-4">
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12">
-        
-        {/* IMAGE SECTION (SAME DESIGN) */}
+
+        {/* IMAGE SECTION */}
         <div className="bg-[#0f172a] rounded-3xl overflow-hidden border border-slate-800 p-2">
-          <img src={car.image} className="rounded-2xl w-full h-full object-cover" />
+          <img
+            src={car.image}
+            className="rounded-2xl w-full h-full object-cover"
+            alt={car.name}
+          />
         </div>
 
         {/* INFO SECTION */}
@@ -137,17 +143,21 @@ const CarDetails = () => {
               <HiLocationMarker className="text-orange-500" /> {car.location}
             </p>
             <p className="text-gray-400 flex items-center gap-2">
-              <HiCalendar className="text-orange-500" /> {car.date || "Available now"}
+              <HiCalendar className="text-orange-500" />
+              {car.date || "Available now"}
             </p>
           </div>
 
-          <p className="text-gray-300 mb-6">✧ {car.description}</p>
+          <p className="text-gray-300 mb-6">
+            ✧ {car.description}
+          </p>
 
           <div className="text-4xl font-bold mb-6">
-            💠 ${car.price} <span className="text-gray-500 text-xl">/day</span>
+            💠 ${car.price}{" "}
+            <span className="text-gray-500 text-xl">/day</span>
           </div>
 
-          {/* BUTTONS (SAME DESIGN) */}
+          {/* BUTTONS */}
           <div className="flex gap-3 mb-4">
             <button
               onClick={() => {
@@ -167,7 +177,7 @@ const CarDetails = () => {
             </button>
           </div>
 
-          {/* ✅ BOOK NOW BUTTON (NOW WORKS) */}
+          {/* BOOK NOW */}
           <button
             onClick={handleBookNow}
             disabled={!car.availability}
@@ -183,45 +193,68 @@ const CarDetails = () => {
         </div>
       </div>
 
-      {/* EDIT MODAL (UNCHANGED) */}
+      {/* EDIT MODAL */}
       {isEditing && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <div className="bg-[#0f172a] p-8 rounded-3xl w-full max-w-md border border-slate-700 shadow-2xl">
+
             <h2 className="text-2xl font-bold mb-6 text-white text-center">
               Edit Car ✨
             </h2>
 
             <div className="space-y-4">
-              <input className="w-full p-4 rounded-xl bg-[#020617] border border-slate-700 text-white"
+              <input
+                className="w-full p-4 rounded-xl bg-[#020617] border border-slate-700 text-white"
                 value={formData.name || ""}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, name: e.target.value })
+                }
               />
 
-              <input className="w-full p-4 rounded-xl bg-[#020617] border border-slate-700 text-white"
+              <input
+                className="w-full p-4 rounded-xl bg-[#020617] border border-slate-700 text-white"
                 value={formData.price || ""}
-                onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, price: e.target.value })
+                }
               />
 
-              <input className="w-full p-4 rounded-xl bg-[#020617] border border-slate-700 text-white"
+              <input
+                className="w-full p-4 rounded-xl bg-[#020617] border border-slate-700 text-white"
                 value={formData.location || ""}
-                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, location: e.target.value })
+                }
               />
 
-              <textarea className="w-full p-4 rounded-xl bg-[#020617] border border-slate-700 text-white h-24"
+              <textarea
+                className="w-full p-4 rounded-xl bg-[#020617] border border-slate-700 text-white h-24"
                 value={formData.description || ""}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    description: e.target.value,
+                  })
+                }
               />
             </div>
 
             <div className="flex gap-3 mt-8">
-              <button onClick={handleUpdate} className="flex-1 bg-orange-600 py-3 rounded-xl font-bold">
+              <button
+                onClick={handleUpdate}
+                className="flex-1 bg-orange-600 py-3 rounded-xl font-bold"
+              >
                 Save Changes
               </button>
 
-              <button onClick={() => setIsEditing(false)} className="flex-1 bg-slate-700 py-3 rounded-xl font-bold">
+              <button
+                onClick={() => setIsEditing(false)}
+                className="flex-1 bg-slate-700 py-3 rounded-xl font-bold"
+              >
                 Cancel
               </button>
             </div>
+
           </div>
         </div>
       )}

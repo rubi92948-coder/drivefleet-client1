@@ -1,7 +1,8 @@
-'use client'; 
+"use client";
 
-import Link from "next/link"; 
+import Link from "next/link";
 import { FaFacebook, FaTwitter, FaInstagram, FaGithub } from "react-icons/fa";
+import { HiHome, HiOutlineCollection, HiPlus, HiBookmark } from "react-icons/hi";
 
 const Footer = () => {
   return (
@@ -26,23 +27,40 @@ const Footer = () => {
             Useful Links
           </h3>
 
-          <ul className="space-y-2 text-gray-400 flex flex-col">
-            {/* Link এর 'to' এর বদলে Next.js এ 'href' ব্যবহার করতে হয় */}
-            <Link href="/" className="hover:text-orange-400 transition w-fit">
+          <ul className="space-y-3 text-gray-400 flex flex-col">
+
+            <Link
+              href="/"
+              className="hover:text-orange-400 transition flex items-center gap-2 w-fit"
+            >
+              <HiHome className="text-orange-500" />
               Home
             </Link>
-            
-            <Link href="/explore-cars" className="hover:text-orange-400 transition w-fit">
+
+            <Link
+              href="/explore-cars"
+              className="hover:text-orange-400 transition flex items-center gap-2 w-fit"
+            >
+              <HiOutlineCollection className="text-orange-500" />
               Explore Cars
             </Link>
-            
-            <Link href="/add-car" className="hover:text-orange-400 transition w-fit">
+
+            <Link
+              href="/add-car"
+              className="hover:text-orange-400 transition flex items-center gap-2 w-fit"
+            >
+              <HiPlus className="text-orange-500" />
               Add Car
             </Link>
-            
-            <Link href="/bookings" className="hover:text-orange-400 transition w-fit">
+
+            <Link
+              href="/my-bookings"
+              className="hover:text-orange-400 transition flex items-center gap-2 w-fit"
+            >
+              <HiBookmark className="text-orange-500" />
               My Bookings
             </Link>
+
           </ul>
         </div>
 
@@ -51,6 +69,7 @@ const Footer = () => {
           <h3 className="text-xl font-semibold mb-4">
             Contact
           </h3>
+
           <p className="text-gray-400 mb-3">
             Email: support@drivefleet.com
           </p>
@@ -59,18 +78,23 @@ const Footer = () => {
           </p>
 
           <div className="flex gap-4">
-            <div className="w-10 h-10 flex items-center justify-center rounded-full bg-[#1e293b] hover:bg-orange-500 transition cursor-pointer group">
-              <FaFacebook className="text-gray-300 group-hover:text-white transition" />
+
+            <div className="w-10 h-10 flex items-center justify-center rounded-full bg-[#1e293b] hover:bg-orange-500 transition cursor-pointer">
+              <FaFacebook />
             </div>
-            <div className="w-10 h-10 flex items-center justify-center rounded-full bg-[#1e293b] hover:bg-orange-500 transition cursor-pointer group">
-              <FaTwitter className="text-gray-300 group-hover:text-white transition" />
+
+            <div className="w-10 h-10 flex items-center justify-center rounded-full bg-[#1e293b] hover:bg-orange-500 transition cursor-pointer">
+              <FaTwitter />
             </div>
-            <div className="w-10 h-10 flex items-center justify-center rounded-full bg-[#1e293b] hover:bg-orange-500 transition cursor-pointer group">
-              <FaInstagram className="text-gray-300 group-hover:text-white transition" />
+
+            <div className="w-10 h-10 flex items-center justify-center rounded-full bg-[#1e293b] hover:bg-orange-500 transition cursor-pointer">
+              <FaInstagram />
             </div>
-            <div className="w-10 h-10 flex items-center justify-center rounded-full bg-[#1e293b] hover:bg-orange-500 transition cursor-pointer group">
-              <FaGithub className="text-gray-300 group-hover:text-white transition" />
+
+            <div className="w-10 h-10 flex items-center justify-center rounded-full bg-[#1e293b] hover:bg-orange-500 transition cursor-pointer">
+              <FaGithub />
             </div>
+
           </div>
         </div>
 
