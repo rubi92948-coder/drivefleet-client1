@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams, useRouter } from "next/navigation";
 import toast from "react-hot-toast";
+import { HiPencilAlt, HiTrash, HiLocationMarker, HiCalendar, HiCheckCircle } from "react-icons/hi";
 
 const CarDetails = () => {
   const { id } = useParams();
@@ -11,201 +12,101 @@ const CarDetails = () => {
 
   const [car, setCar] = useState(null);
   const [loading, setLoading] = useState(true);
-
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({});
 
   useEffect(() => {
     if (!id) return;
-
     const fetchCarDetails = async () => {
       try {
-        const res = await axios.get(
-          `${process.env.NEXT_PUBLIC_SERVER_URL}/api/cars/${id}`
-        );
-
+        const res = await axios.get(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/cars/${id}`);
         setCar(res.data);
       } catch (err) {
-        toast.error("Failed to load car details");
+        toast.error("Failed to load details");
       } finally {
         setLoading(false);
       }
     };
-
     fetchCarDetails();
   }, [id]);
 
-  // =======================
-  // DELETE
-  // =======================
   const handleDelete = async () => {
+    if (!confirm("Are you sure you want to delete this car?")) return;
     try {
-      await axios.delete(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}/api/cars/${id}`
-      );
-
-      toast.success("Car deleted successfully");
+      await axios.delete(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/cars/${id}`);
+      toast.success("Deleted successfully");
       router.push("/explore-cars");
     } catch (err) {
       toast.error("Delete failed");
     }
   };
 
-  // =======================
-  // UPDATE
-  // =======================
   const handleUpdate = async () => {
     try {
-      await axios.put(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}/api/cars/${id}`,
-        formData
-      );
-
-      setCar({ ...car, ...formData });
+      const { _id, ...dataToUpdate } = formData;
+      await axios.put(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/cars/${id}`, dataToUpdate);
+      setCar({ ...car, ...dataToUpdate });
       setIsEditing(false);
-      toast.success("Updated successfully");
+      toast.success("Updated successfully! ✨");
     } catch (err) {
       toast.error("Update failed");
     }
   };
 
-  if (loading)
-    return (
-      <div className="min-h-screen bg-[#020617] text-white flex items-center justify-center">
-        Loading...
-      </div>
-    );
-
-  if (!car)
-    return (
-      <div className="min-h-screen bg-[#020617] text-white flex items-center justify-center">
-        Car not found!
-      </div>
-    );
+  if (loading) return <div className="min-h-screen bg-[#020617] text-white flex items-center justify-center">Loading...</div>;
 
   return (
     <div className="bg-[#020617] min-h-screen text-white pt-24 px-4">
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12">
-
-        {/* IMAGE */}
-        <div className="bg-[#0f172a] rounded-3xl overflow-hidden border border-gray-800 p-2">
-          <img src={car.image} className="rounded-2xl w-full" />
+        
+        {/* IMAGE SECTION */}
+        <div className="bg-[#0f172a] rounded-3xl overflow-hidden border border-slate-800 p-2">
+          <img src={car.image} className="rounded-2xl w-full h-full object-cover" />
         </div>
 
-        {/* INFO */}
+        {/* INFO SECTION */}
         <div className="flex flex-col justify-center">
-
-          <span className="text-amber-400 font-semibold tracking-widest text-sm mb-3">
-            ✦ {car.type}
-          </span>
-
-          <h1 className="text-5xl font-extrabold mb-5">
-            ✧ {car.name}
-          </h1>
-
-          <p className="text-gray-400 mb-4">📍 {car.location}</p>
-          <p className="text-gray-400 mb-4">🗓️ {car.date}</p>
+          <span className="text-orange-500 font-semibold tracking-widest text-sm mb-3">✦ {car.type}</span>
+          <h1 className="text-5xl font-extrabold mb-5">✧ {car.name}</h1>
+          
+          <div className="flex flex-col gap-2 mb-6">
+            <p className="text-gray-400 flex items-center gap-2"><HiLocationMarker className="text-orange-500" /> {car.location}</p>
+            <p className="text-gray-400 flex items-center gap-2"><HiCalendar className="text-orange-500" /> {car.date || "Available now"}</p>
+          </div>
 
           <p className="text-gray-300 mb-6">✧ {car.description}</p>
+          <div className="text-4xl font-bold mb-6">💠 ${car.price} <span className="text-gray-500 text-xl">/day</span></div>
 
-          <div className="text-4xl font-bold mb-6">
-            💠 ${car.price} <span className="text-gray-500 text-xl">/day</span>
-          </div>
-
-          {/* BUTTONS */}
+          {/* BUTTONS - কালার থিম অনুযায়ী */}
           <div className="flex gap-3 mb-4">
-
-            <button
-              onClick={() => {
-                setIsEditing(true);
-                setFormData(car);
-              }}
-              className="w-full py-3 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-500"
-            >
-              ✨ Edit
+            <button onClick={() => { setIsEditing(true); setFormData(car); }} className="w-full py-3 rounded-xl flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 font-bold transition border border-slate-700">
+              <HiPencilAlt /> Edit
             </button>
-
-            <button
-              onClick={handleDelete}
-              className="w-full py-3 rounded-xl bg-gradient-to-r from-red-500 to-pink-500"
-            >
-              🗑 Delete
+            <button onClick={handleDelete} className="w-full py-3 rounded-xl flex items-center justify-center gap-2 bg-red-900/20 text-red-500 hover:bg-red-900/40 font-bold transition border border-red-900/30">
+              <HiTrash /> Delete
             </button>
-
           </div>
 
-          <button
-            disabled={!car.availability}
-            className={`w-full py-4 rounded-xl font-bold ${
-              car.availability
-                ? "bg-gradient-to-r from-orange-500 to-amber-500"
-                : "bg-gray-700"
-            }`}
-          >
-            {car.availability ? "✦ Book Now" : "✧ Unavailable"}
+          <button disabled={!car.availability} className={`w-full py-4 rounded-xl font-bold flex items-center justify-center gap-2 ${car.availability ? "bg-orange-600 hover:bg-orange-700" : "bg-gray-700"}`}>
+            {car.availability ? <><HiCheckCircle /> Book Now</> : "✧ Unavailable"}
           </button>
         </div>
       </div>
 
       {/* EDIT MODAL */}
       {isEditing && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center">
-          <div className="bg-[#0f172a] p-6 rounded-2xl w-[400px]">
-
-            <h2 className="text-xl mb-4">Edit Car ✨</h2>
-
-            <input
-              className="w-full p-2 mb-2 bg-gray-800 rounded"
-              value={formData.name || ""}
-              onChange={(e) =>
-                setFormData({ ...formData, name: e.target.value })
-              }
-              placeholder="Name"
-            />
-
-            <input
-              className="w-full p-2 mb-2 bg-gray-800 rounded"
-              value={formData.price || ""}
-              onChange={(e) =>
-                setFormData({ ...formData, price: e.target.value })
-              }
-              placeholder="Price"
-            />
-
-            <input
-              className="w-full p-2 mb-2 bg-gray-800 rounded"
-              value={formData.location || ""}
-              onChange={(e) =>
-                setFormData({ ...formData, location: e.target.value })
-              }
-              placeholder="Location"
-            />
-
-            <textarea
-              className="w-full p-2 mb-3 bg-gray-800 rounded"
-              value={formData.description || ""}
-              onChange={(e) =>
-                setFormData({ ...formData, description: e.target.value })
-              }
-              placeholder="Description"
-            />
-
-            <div className="flex gap-2">
-
-              <button
-                onClick={handleUpdate}
-                className="w-full bg-green-500 py-2 rounded"
-              >
-                Save
-              </button>
-
-              <button
-                onClick={() => setIsEditing(false)}
-                className="w-full bg-gray-600 py-2 rounded"
-              >
-                Cancel
-              </button>
-
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-[#0f172a] p-8 rounded-3xl w-full max-w-md border border-slate-700 shadow-2xl">
+            <h2 className="text-2xl font-bold mb-6 text-white text-center">Edit Car ✨</h2>
+            <div className="space-y-4">
+              <input className="w-full p-4 rounded-xl bg-[#020617] border border-slate-700 outline-none focus:border-orange-500 transition-all text-white" value={formData.name || ""} onChange={(e) => setFormData({ ...formData, name: e.target.value })} placeholder="Car Name" />
+              <input className="w-full p-4 rounded-xl bg-[#020617] border border-slate-700 outline-none focus:border-orange-500 transition-all text-white" value={formData.price || ""} onChange={(e) => setFormData({ ...formData, price: e.target.value })} placeholder="Price" />
+              <input className="w-full p-4 rounded-xl bg-[#020617] border border-slate-700 outline-none focus:border-orange-500 transition-all text-white" value={formData.location || ""} onChange={(e) => setFormData({ ...formData, location: e.target.value })} placeholder="Location" />
+              <textarea className="w-full p-4 rounded-xl bg-[#020617] border border-slate-700 outline-none focus:border-orange-500 transition-all text-white h-24" value={formData.description || ""} onChange={(e) => setFormData({ ...formData, description: e.target.value })} placeholder="Description" />
+            </div>
+            <div className="flex gap-3 mt-8">
+              <button onClick={handleUpdate} className="flex-1 bg-orange-600 hover:bg-orange-700 py-3 rounded-xl font-bold transition">Save Changes</button>
+              <button onClick={() => setIsEditing(false)} className="flex-1 bg-slate-700 hover:bg-slate-600 py-3 rounded-xl font-bold transition">Cancel</button>
             </div>
           </div>
         </div>

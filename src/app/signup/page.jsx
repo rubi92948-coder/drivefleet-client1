@@ -4,18 +4,13 @@ import { useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
+import { HiEye, HiEyeOff } from "react-icons/hi";
 
 const Signup = () => {
   const router = useRouter();
-
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-    image: "",
-    password: "",
-  });
-
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [form, setForm] = useState({ name: "", image: "", email: "", password: "" });
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -23,106 +18,65 @@ const Signup = () => {
 
   const handleSignup = async (e) => {
     e.preventDefault();
+    setLoading(true);
 
     try {
-      await axios.post(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}/api/auth/signup`,
-        form
-      );
-
-      toast.success("Account created successfully ✨");
-      router.push("/");
+      await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/auth/signup`, form);
+      toast.success("Account created successfully! ✨");
+      router.push("/login");
     } catch (err) {
       toast.error(err.response?.data?.message || "Signup failed");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-950 text-white px-4">
-
+    <div className="min-h-screen flex items-center justify-center bg-[#020617] text-white px-4 py-10">
       <form
         onSubmit={handleSignup}
-        className="w-full max-w-md bg-slate-900 p-8 rounded-2xl border border-slate-800"
+        className="w-full max-w-md bg-[#0f172a] p-8 rounded-3xl border border-slate-800 shadow-2xl transition-all hover:border-orange-500/30"
       >
+        <h1 className="text-3xl font-extrabold mb-2 text-center">Create Account</h1>
+        <p className="text-gray-400 text-center mb-8">Join DriveFleet today.</p>
 
-        {/* TITLE */}
-        <h1 className="text-3xl font-bold mb-6 text-center">
-          Create Account ✨
-        </h1>
-
-        {/* INPUTS WRAPPER */}
         <div className="space-y-4">
-
-          {/* NAME */}
-          <input
-            name="name"
-            placeholder="Full Name"
-            onChange={handleChange}
-            className="input"
-            required
-          />
-
-          {/* IMAGE */}
-          <input
-            name="image"
-            placeholder="Profile Image URL"
-            onChange={handleChange}
-            className="input"
-          />
-
-          {/* EMAIL */}
-          <input
-            name="email"
-            placeholder="Email"
-            onChange={handleChange}
-            className="input"
-            required
-          />
-
-          {/* PASSWORD */}
+          <input name="name" placeholder="Full Name" onChange={handleChange} className="w-full p-4 rounded-xl bg-[#020617] border border-slate-700 outline-none focus:border-orange-500 transition-all" required />
+          <input name="image" placeholder="Profile Image URL" onChange={handleChange} className="w-full p-4 rounded-xl bg-[#020617] border border-slate-700 outline-none focus:border-orange-500 transition-all" />
+          <input name="email" type="email" placeholder="Email Address" onChange={handleChange} className="w-full p-4 rounded-xl bg-[#020617] border border-slate-700 outline-none focus:border-orange-500 transition-all" required />
+          
           <div className="relative">
-            <input
-              name="password"
-              type={showPassword ? "text" : "password"}
-              placeholder="Password"
-              onChange={handleChange}
-              className="input pr-20"
-              required
+            <input 
+              name="password" 
+              type={showPassword ? "text" : "password"} 
+              placeholder="Password" 
+              onChange={handleChange} 
+              className="w-full p-4 rounded-xl bg-[#020617] border border-slate-700 outline-none focus:border-orange-500 transition-all" 
+              required 
             />
-
-            <button
-              type="button"
+            <button 
+              type="button" 
+              className="absolute right-4 top-4 text-xl text-gray-500 hover:text-orange-500 transition-colors" 
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-3 text-sm text-gray-400"
             >
-              {showPassword ? "Hide" : "Show"}
+              {showPassword ? <HiEyeOff /> : <HiEye />}
             </button>
           </div>
-
         </div>
 
-        {/* BUTTON */}
         <button
           type="submit"
-          className="w-full mt-6 bg-orange-500 hover:bg-orange-600 py-3 rounded-xl font-bold transition"
+          disabled={loading}
+          className="w-full mt-8 bg-orange-600 hover:bg-orange-700 py-4 rounded-xl font-bold text-lg shadow-lg shadow-orange-900/20 transition-all active:scale-95"
         >
-          Create Account
+          {loading ? "Creating..." : "Sign Up"}
         </button>
+
+        <p className="text-center text-gray-500 mt-6 text-sm">
+          Already a member?{" "}
+          <a href="/login" className="text-orange-500 hover:underline font-bold">Log in</a>
+        </p>
       </form>
-
-      {/* STYLE */}
-      <style jsx>{`
-        .input {
-          width: 100%;
-          padding: 12px;
-          border-radius: 10px;
-          background: #0f172a;
-          border: 1px solid #334155;
-          outline: none;
-          color: white;
-        }
-      `}</style>
-
     </div>
   );
 };
