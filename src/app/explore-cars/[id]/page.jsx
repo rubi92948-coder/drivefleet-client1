@@ -2,21 +2,21 @@
 
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import toast from "react-hot-toast";
-import {
-  HiLocationMarker,
-  HiCalendar,
-  HiCheckCircle,
-} from "react-icons/hi";
+import { HiLocationMarker, HiCalendar, HiCheckCircle } from "react-icons/hi";
 
-const CarDetails = () => {
+export default function CarDetails() {
   const { id } = useParams();
-  const router = useRouter();
 
   const [car, setCar] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+
+  const [form, setForm] = useState({
+    driverNeeded: "No",
+    specialNote: "",
+  });
 
   useEffect(() => {
     const fetchCar = async () => {
@@ -25,7 +25,7 @@ const CarDetails = () => {
           `${process.env.NEXT_PUBLIC_SERVER_URL}/api/cars/${id}`
         );
         setCar(res.data);
-      } catch (err) {
+      } catch {
         toast.error("Failed to load car");
       } finally {
         setLoading(false);
@@ -35,7 +35,6 @@ const CarDetails = () => {
     if (id) fetchCar();
   }, [id]);
 
-  // ✅ BOOKING
   const handleBooking = async () => {
     try {
       const user = JSON.parse(localStorage.getItem("user"));
@@ -53,12 +52,15 @@ const CarDetails = () => {
           price: car.price,
           image: car.image,
           userEmail: user.email,
+          bookingDate: new Date(),
+          driverNeeded: form.driverNeeded,
+          specialNote: form.specialNote,
         }
       );
 
       toast.success("Booking successful 🚗");
       setShowModal(false);
-    } catch (err) {
+    } catch {
       toast.error("Booking failed");
     }
   };
@@ -74,25 +76,17 @@ const CarDetails = () => {
   return (
     <div className="min-h-screen bg-[#020617] text-white pt-24 px-4">
 
-      {/* MAIN */}
       <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-10">
 
-        {/* IMAGE */}
         <img
           src={car.image}
           className="rounded-2xl w-full h-96 object-cover"
         />
 
-        {/* INFO */}
         <div>
+          <h1 className="text-4xl font-bold mb-3">{car.name}</h1>
 
-          <h1 className="text-4xl font-bold mb-3">
-            {car.name}
-          </h1>
-
-          <p className="text-gray-400 mb-4">
-            {car.description}
-          </p>
+          <p className="text-gray-400 mb-4">{car.description}</p>
 
           <p className="flex items-center gap-2 mb-2">
             <HiLocationMarker className="text-orange-500" />
@@ -106,9 +100,7 @@ const CarDetails = () => {
 
           <p className="flex items-center gap-2 mb-4">
             <HiCheckCircle
-              className={
-                car.availability ? "text-green-500" : "text-red-500"
-              }
+              className={car.availability ? "text-green-500" : "text-red-500"}
             />
             {car.availability ? "Available" : "Unavailable"}
           </p>
@@ -117,7 +109,6 @@ const CarDetails = () => {
             ${car.price}/day
           </div>
 
-          {/* BOOK BUTTON */}
           <button
             onClick={() => setShowModal(true)}
             disabled={!car.availability}
@@ -132,21 +123,40 @@ const CarDetails = () => {
         </div>
       </div>
 
-      {/* BOOKING MODAL */}
+      {/* MODAL */}
       {showModal && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4">
-
           <div className="bg-[#0f172a] p-6 rounded-xl w-full max-w-md">
 
             <h2 className="text-2xl font-bold mb-4">
-              Confirm Booking
+              Book Car
             </h2>
 
             <p className="mb-2">Car: {car.name}</p>
-            <p className="mb-2">Price: ${car.price}/day</p>
+            <p className="mb-4">Price: ${car.price}/day</p>
 
-            <div className="flex gap-3 mt-6">
+            <label className="block mb-2">Driver Needed</label>
+            <select
+              value={form.driverNeeded}
+              onChange={(e) =>
+                setForm({ ...form, driverNeeded: e.target.value })
+              }
+              className="w-full p-2 bg-slate-900 rounded mb-3"
+            >
+              <option value="No">No</option>
+              <option value="Yes">Yes</option>
+            </select>
 
+            <textarea
+              placeholder="Special Note"
+              value={form.specialNote}
+              onChange={(e) =>
+                setForm({ ...form, specialNote: e.target.value })
+              }
+              className="w-full p-2 bg-slate-900 rounded mb-4"
+            />
+
+            <div className="flex gap-3">
               <button
                 onClick={handleBooking}
                 className="flex-1 bg-orange-500 py-2 rounded-lg font-bold"
@@ -160,15 +170,11 @@ const CarDetails = () => {
               >
                 Cancel
               </button>
-
             </div>
 
           </div>
-
         </div>
       )}
     </div>
   );
-};
-
-export default CarDetails;
+}
