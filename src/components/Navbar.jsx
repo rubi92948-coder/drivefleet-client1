@@ -117,7 +117,7 @@ const Navbar = () => {
                   </Link>
 
                   <Link
-                    href="/my-bookings"
+                    href="/bookings"
                     onClick={() => setDropdownOpen(false)}
                     className="block px-4 py-2 hover:bg-gray-800"
                   >
