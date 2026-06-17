@@ -5,8 +5,6 @@ import axios from "axios";
 import { useParams, useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import {
-  HiPencilAlt,
-  HiTrash,
   HiLocationMarker,
   HiCalendar,
   HiCheckCircle,
@@ -18,30 +16,27 @@ const CarDetails = () => {
 
   const [car, setCar] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState({});
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
-    if (!id) return;
-
-    const fetchCarDetails = async () => {
+    const fetchCar = async () => {
       try {
         const res = await axios.get(
           `${process.env.NEXT_PUBLIC_SERVER_URL}/api/cars/${id}`
         );
         setCar(res.data);
       } catch (err) {
-        toast.error("Failed to load details");
+        toast.error("Failed to load car");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchCarDetails();
+    if (id) fetchCar();
   }, [id]);
 
-  // ✅ BOOK NOW
-  const handleBookNow = async () => {
+  // ✅ BOOKING
+  const handleBooking = async () => {
     try {
       const user = JSON.parse(localStorage.getItem("user"));
 
@@ -50,212 +45,126 @@ const CarDetails = () => {
         return;
       }
 
-      if (!car) {
-        toast.error("Car not loaded");
-        return;
-      }
-
-      const bookingData = {
-        carId: car._id,
-        carName: car.name,
-        image: car.image,
-        price: car.price,
-        userEmail: user.email,
-        createdAt: new Date(),
-      };
-
       await axios.post(
         `${process.env.NEXT_PUBLIC_SERVER_URL}/api/bookings`,
-        bookingData
+        {
+          carId: car._id,
+          carName: car.name,
+          price: car.price,
+          image: car.image,
+          userEmail: user.email,
+        }
       );
 
       toast.success("Booking successful 🚗");
+      setShowModal(false);
     } catch (err) {
       toast.error("Booking failed");
     }
   };
 
-  const handleDelete = async () => {
-    if (!confirm("Are you sure you want to delete this car?")) return;
-
-    try {
-      await axios.delete(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}/api/cars/${id}`
-      );
-      toast.success("Deleted successfully");
-      router.push("/explore-cars");
-    } catch (err) {
-      toast.error("Delete failed");
-    }
-  };
-
-  const handleUpdate = async () => {
-    try {
-      const { _id, ...dataToUpdate } = formData;
-
-      await axios.put(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}/api/cars/${id}`,
-        dataToUpdate
-      );
-
-      setCar({ ...car, ...dataToUpdate });
-      setIsEditing(false);
-      toast.success("Updated successfully! ✨");
-    } catch (err) {
-      toast.error("Update failed");
-    }
-  };
-
-  // ✅ SAFE RENDER (IMPORTANT FIX)
   if (loading || !car) {
     return (
-      <div className="min-h-screen bg-[#020617] text-white flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-[#020617] text-white">
         Loading...
       </div>
     );
   }
 
   return (
-    <div className="bg-[#020617] min-h-screen text-white pt-24 px-4">
-      <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12">
+    <div className="min-h-screen bg-[#020617] text-white pt-24 px-4">
 
-        {/* IMAGE SECTION */}
-        <div className="bg-[#0f172a] rounded-3xl overflow-hidden border border-slate-800 p-2">
-          <img
-            src={car.image}
-            className="rounded-2xl w-full h-full object-cover"
-            alt={car.name}
-          />
-        </div>
+      {/* MAIN */}
+      <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-10">
 
-        {/* INFO SECTION */}
-        <div className="flex flex-col justify-center">
-          <span className="text-orange-500 font-semibold tracking-widest text-sm mb-3">
-            ✦ {car.type}
-          </span>
+        {/* IMAGE */}
+        <img
+          src={car.image}
+          className="rounded-2xl w-full h-96 object-cover"
+        />
 
-          <h1 className="text-5xl font-extrabold mb-5">
-            ✧ {car.name}
+        {/* INFO */}
+        <div>
+
+          <h1 className="text-4xl font-bold mb-3">
+            {car.name}
           </h1>
 
-          <div className="flex flex-col gap-2 mb-6">
-            <p className="text-gray-400 flex items-center gap-2">
-              <HiLocationMarker className="text-orange-500" /> {car.location}
-            </p>
-            <p className="text-gray-400 flex items-center gap-2">
-              <HiCalendar className="text-orange-500" />
-              {car.date || "Available now"}
-            </p>
-          </div>
-
-          <p className="text-gray-300 mb-6">
-            ✧ {car.description}
+          <p className="text-gray-400 mb-4">
+            {car.description}
           </p>
 
-          <div className="text-4xl font-bold mb-6">
-            💠 ${car.price}{" "}
-            <span className="text-gray-500 text-xl">/day</span>
+          <p className="flex items-center gap-2 mb-2">
+            <HiLocationMarker className="text-orange-500" />
+            {car.location}
+          </p>
+
+          <p className="flex items-center gap-2 mb-2">
+            <HiCalendar className="text-orange-500" />
+            {car.date}
+          </p>
+
+          <p className="flex items-center gap-2 mb-4">
+            <HiCheckCircle
+              className={
+                car.availability ? "text-green-500" : "text-red-500"
+              }
+            />
+            {car.availability ? "Available" : "Unavailable"}
+          </p>
+
+          <div className="text-3xl font-bold mb-6">
+            ${car.price}/day
           </div>
 
-          {/* BUTTONS */}
-          <div className="flex gap-3 mb-4">
-            <button
-              onClick={() => {
-                setIsEditing(true);
-                setFormData(car);
-              }}
-              className="w-full py-3 rounded-xl flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 font-bold transition border border-slate-700"
-            >
-              <HiPencilAlt /> Edit
-            </button>
-
-            <button
-              onClick={handleDelete}
-              className="w-full py-3 rounded-xl flex items-center justify-center gap-2 bg-red-900/20 text-red-500 hover:bg-red-900/40 font-bold transition border border-red-900/30"
-            >
-              <HiTrash /> Delete
-            </button>
-          </div>
-
-          {/* BOOK NOW */}
+          {/* BOOK BUTTON */}
           <button
-            onClick={handleBookNow}
+            onClick={() => setShowModal(true)}
             disabled={!car.availability}
-            className={`w-full py-4 rounded-xl font-bold flex items-center justify-center gap-2 ${
+            className={`w-full py-3 rounded-xl font-bold ${
               car.availability
-                ? "bg-orange-600 hover:bg-orange-700"
+                ? "bg-orange-500 hover:bg-orange-600"
                 : "bg-gray-700"
             }`}
           >
-            <HiCheckCircle />
             Book Now
           </button>
         </div>
       </div>
 
-      {/* EDIT MODAL */}
-      {isEditing && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-[#0f172a] p-8 rounded-3xl w-full max-w-md border border-slate-700 shadow-2xl">
+      {/* BOOKING MODAL */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4">
 
-            <h2 className="text-2xl font-bold mb-6 text-white text-center">
-              Edit Car ✨
+          <div className="bg-[#0f172a] p-6 rounded-xl w-full max-w-md">
+
+            <h2 className="text-2xl font-bold mb-4">
+              Confirm Booking
             </h2>
 
-            <div className="space-y-4">
-              <input
-                className="w-full p-4 rounded-xl bg-[#020617] border border-slate-700 text-white"
-                value={formData.name || ""}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
-              />
+            <p className="mb-2">Car: {car.name}</p>
+            <p className="mb-2">Price: ${car.price}/day</p>
 
-              <input
-                className="w-full p-4 rounded-xl bg-[#020617] border border-slate-700 text-white"
-                value={formData.price || ""}
-                onChange={(e) =>
-                  setFormData({ ...formData, price: e.target.value })
-                }
-              />
+            <div className="flex gap-3 mt-6">
 
-              <input
-                className="w-full p-4 rounded-xl bg-[#020617] border border-slate-700 text-white"
-                value={formData.location || ""}
-                onChange={(e) =>
-                  setFormData({ ...formData, location: e.target.value })
-                }
-              />
-
-              <textarea
-                className="w-full p-4 rounded-xl bg-[#020617] border border-slate-700 text-white h-24"
-                value={formData.description || ""}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    description: e.target.value,
-                  })
-                }
-              />
-            </div>
-
-            <div className="flex gap-3 mt-8">
               <button
-                onClick={handleUpdate}
-                className="flex-1 bg-orange-600 py-3 rounded-xl font-bold"
+                onClick={handleBooking}
+                className="flex-1 bg-orange-500 py-2 rounded-lg font-bold"
               >
-                Save Changes
+                Confirm
               </button>
 
               <button
-                onClick={() => setIsEditing(false)}
-                className="flex-1 bg-slate-700 py-3 rounded-xl font-bold"
+                onClick={() => setShowModal(false)}
+                className="flex-1 bg-gray-700 py-2 rounded-lg font-bold"
               >
                 Cancel
               </button>
+
             </div>
 
           </div>
+
         </div>
       )}
     </div>

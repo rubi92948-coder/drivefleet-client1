@@ -70,7 +70,7 @@ const Navbar = () => {
           <Link href="/" className={linkClass("/")}>Home</Link>
           <Link href="/explore-cars" className={linkClass("/explore-cars")}>Explore Cars</Link>
           <Link href="/add-car" className={linkClass("/add-car")}>Add Car</Link>
-          <Link href="/my-bookings" className={linkClass("/my-bookings")}>Bookings</Link>
+          <Link href="/my-bookings" className={linkClass("/my-bookings")}>My Bookings</Link>
 
           <div className="w-px h-6 bg-gray-700 mx-2" />
 
