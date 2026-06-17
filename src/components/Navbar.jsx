@@ -90,7 +90,7 @@ const Navbar = () => {
           <Link href="/add-car" className={getLinkClass("/add-car")} onClick={() => setOpen(false)}>Add Car</Link>
           <Link href="/my-added-cars" className={getLinkClass("/my-added-cars")} onClick={() => setOpen(false)}>My Added Cars</Link>
           <Link href="/my-bookings" className={getLinkClass("/my-bookings")} onClick={() => setOpen(false)}>My Bookings</Link>
-          <Link href="/signup" className={getLinkClass("/signup")} onClick={() => setOpen(false)}>Register</Link>
+          <Link href="/signup" className={getLinkClass("/signup")} onClick={() => setOpen(false)}>SignUp</Link>
           <button onClick={handleLogout} className="text-red-500 text-left p-2">Log Out</button>
         </div>
       )}
