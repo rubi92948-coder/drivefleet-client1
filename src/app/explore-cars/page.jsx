@@ -125,7 +125,7 @@ const Explore = () => {
                 <h3 className="text-2xl font-bold mb-4">{car?.name || "Unknown Car"}</h3>
                 <div className="flex justify-between items-center mb-6">
                   <span className="text-orange-500 font-extrabold text-xl">${car?.price || 0}<span className="text-xs text-gray-400">/day</span></span>
-                  <button onClick={() => router.push(`/car/${car?._id}`)} className="text-xs border border-gray-600 px-3 py-1.5 rounded-lg hover:bg-gray-800">Details</button>
+                  <button onClick={() => router.push(`/explore-cars/${car?._id}`)} className="text-xs border border-gray-600 px-3 py-1.5 rounded-lg hover:bg-gray-800">Details</button>
                 </div>
                 <button
                   onClick={() => handleOpenBooking(car)}

@@ -33,7 +33,7 @@ const Banner = () => {
             onClick={() => router.push("/explore-cars")} 
             className="bg-orange-500 hover:bg-orange-600 px-8 py-4 rounded-xl text-md font-bold transition duration-300 shadow-lg shadow-orange-500/20 text-white cursor-pointer"
           >
-            Explore Fleet
+            Explore Cars
           </button>
           <button 
             onClick={() => router.push("/explore-cars")} 

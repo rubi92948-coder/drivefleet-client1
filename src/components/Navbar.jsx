@@ -1,4 +1,4 @@
-'use client'; // Required for client-side components
+'use client';
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
@@ -12,7 +12,6 @@ const Navbar = () => {
   const pathname = usePathname();
   const router = useRouter();
 
-  // Load user from localStorage
   useEffect(() => {
     if (typeof window !== "undefined") {
       const loggedUser = JSON.parse(localStorage.getItem("user"));
@@ -28,12 +27,19 @@ const Navbar = () => {
     router.push("/");
   };
 
-  const isActive = (path) => pathname === path;
+  // Ei function-ti ekhon Register button er jonno o kaj korbe
+  const getLinkClass = (path) => {
+    const baseClass = "px-4 py-2 rounded-lg transition-colors";
+    return pathname === path 
+      ? `${baseClass} bg-orange-600 text-white` 
+      : `${baseClass} text-gray-300 hover:text-white`;
+  };
 
   return (
     <nav className="bg-black text-white border-b border-gray-800 relative z-50">
-      <div className="max-w-7xl mx-auto flex justify-between items-center px-4 py-3.5">
+      <div className="max-w-7xl mx-auto flex justify-between items-center px-4 py-3">
         
+          
         {/* LOGO */}
         <Link href="/" className="flex items-center gap-2 group">
           <div className="relative w-9 h-9 bg-gradient-to-br from-orange-500 via-orange-600 to-amber-600 rounded-xl flex items-center justify-center">
@@ -42,23 +48,30 @@ const Navbar = () => {
           <span className="text-2xl font-black text-white">Drive<span className="text-orange-500">Fleet</span></span>
         </Link>
 
+
         {/* DESKTOP MENU */}
-        <div className="hidden md:flex items-center gap-6 font-medium text-gray-300">
-          <Link href="/" className={isActive("/") ? "text-orange-500" : "hover:text-white"}>Home</Link>
-          <Link href="/explore-cars" className={isActive("/explore-cars") ? "text-orange-500" : "hover:text-white"}>Explore Cars</Link>
-          <Link href="/add-car" className={isActive("/add-car") ? "text-orange-500" : "hover:text-white"}>Add Car</Link>
+        <div className="hidden md:flex items-center gap-1 font-medium">
+          <Link href="/" className={getLinkClass("/")}>Home</Link>
+          <Link href="/explore-cars" className={getLinkClass("/explore-cars")}>Explore Cars</Link>
+          <Link href="/add-car" className={getLinkClass("/add-car")}>Add Car</Link>
+          <Link href="/my-added-cars" className={getLinkClass("/my-added-cars")}>My Added Cars</Link>
+          <Link href="/my-bookings" className={getLinkClass("/my-bookings")}>My Bookings</Link>
+
+          {/* Separator */}
+          <div className="h-6 w-[1px] bg-gray-700 mx-3"></div>
 
           {!user ? (
-            <div className="flex gap-4">
-              <button onClick={() => router.push("/login")} className="hover:text-white">LogIn</button>
-              <button onClick={() => router.push("/signup")} className="bg-orange-500 px-4 py-2 rounded-lg text-white">Register</button>
+            <div className="flex gap-2 items-center ml-2">
+              <Link href="/login" className={getLinkClass("/login")}>LogIn</Link>
+              {/* Register ekhon link hishebe active state pabe */}
+              <Link href="/signup" className={getLinkClass("/signup")}>Register</Link>
             </div>
           ) : (
-            <div className="relative">
+            <div className="relative ml-2">
               <button onClick={() => setDropdownOpen(!dropdownOpen)} className="bg-gray-800 px-4 py-2 rounded-full">{user.name.split(" ")[0]}</button>
               {dropdownOpen && (
-                <div className="absolute right-0 mt-2 w-40 bg-gray-900 border border-gray-700 rounded-lg p-2">
-                  <button onClick={handleLogout} className="text-red-400 w-full text-left p-2">Log Out</button>
+                <div className="absolute right-0 mt-2 w-40 bg-gray-900 border border-gray-700 rounded-lg p-2 z-50">
+                  <button onClick={handleLogout} className="text-red-400 w-full text-left p-2 hover:bg-gray-800 rounded">Log Out</button>
                 </div>
               )}
             </div>
@@ -71,10 +84,14 @@ const Navbar = () => {
 
       {/* MOBILE MENU */}
       {open && (
-        <div className="md:hidden bg-black p-4 flex flex-col gap-4 border-t border-gray-800">
-          <Link href="/" onClick={() => setOpen(false)}>Home</Link>
-          <Link href="/explore-cars" onClick={() => setOpen(false)}>Explore Cars</Link>
-          <button onClick={handleLogout} className="text-red-500 text-left">Log Out</button>
+        <div className="md:hidden bg-black p-4 flex flex-col gap-2 border-t border-gray-800">
+          <Link href="/" className={getLinkClass("/")} onClick={() => setOpen(false)}>Home</Link>
+          <Link href="/explore-cars" className={getLinkClass("/explore-cars")} onClick={() => setOpen(false)}>Explore Cars</Link>
+          <Link href="/add-car" className={getLinkClass("/add-car")} onClick={() => setOpen(false)}>Add Car</Link>
+          <Link href="/my-added-cars" className={getLinkClass("/my-added-cars")} onClick={() => setOpen(false)}>My Added Cars</Link>
+          <Link href="/my-bookings" className={getLinkClass("/my-bookings")} onClick={() => setOpen(false)}>My Bookings</Link>
+          <Link href="/signup" className={getLinkClass("/signup")} onClick={() => setOpen(false)}>Register</Link>
+          <button onClick={handleLogout} className="text-red-500 text-left p-2">Log Out</button>
         </div>
       )}
     </nav>
