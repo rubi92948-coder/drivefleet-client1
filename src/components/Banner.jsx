@@ -3,6 +3,8 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import AvailableCars from "@/components/AvailableCars";
+import Testimonials from "@/components/Testimonials";
+import WhyChooseUs from "@/components/WhyChooseUs";
 
 const Banner = () => {
   const router = useRouter();
@@ -62,6 +64,8 @@ const Banner = () => {
 
       {/* ✅ Available Cars SECTION HERE */}
       <AvailableCars />
+      <Testimonials />
+      <WhyChooseUs />
     </>
   );
 };
