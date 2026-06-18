@@ -1,49 +1,49 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
+import { createAuthClient } from "better-auth/react";
+
+const auth = createAuthClient();
 
 const AddCar = () => {
-  const [user, setUser] = useState(null);
-  const [formData, setFormData] = useState({
-    name: "", 
-    price: "", 
-    type: "", 
-    image: "", 
-    seats: "", 
-    location: "", 
-    date: "", 
-    availability: true, 
-    description: ""
-  });
-
+  const { data: session } = auth.useSession();
   const router = useRouter();
 
-  useEffect(() => {
-    // localStorage থেকে ইউজার রিট্রিভ করা
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-  }, []);
+  const [formData, setFormData] = useState({
+    name: "",
+    price: "",
+    type: "",
+    image: "",
+    seats: "",
+    location: "",
+    date: "",
+    availability: true,
+    description: ""
+  });
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData(prev => ({
-      ...prev, 
+      ...prev,
       [name]: type === "checkbox" ? checked : value
     }));
   };
 
   const handleAddCar = async (e) => {
     e.preventDefault();
-    
-    // ডাটাবেসে পাঠানোর জন্য অবজেক্ট তৈরি
-    const finalData = { 
-      ...formData, 
-      price: parseFloat(formData.price), // নাম্বার হিসেবে কনভার্ট করা
-      seats: parseInt(formData.seats),   // নাম্বার হিসেবে কনভার্ট করা
-      userEmail: user?.email 
+
+    // চেক করুন ইউজার লগইন আছে কি না
+    if (!session?.user?.email) {
+      toast.error("Please login to add a car!");
+      return;
+    }
+
+    const finalData = {
+      ...formData,
+      price: parseFloat(formData.price),
+      seats: parseInt(formData.seats),
+      userEmail: session.user.email // সেশন থেকে প্রাপ্ত ইমেইল ব্যবহার করা হলো
     };
 
     try {
@@ -57,7 +57,8 @@ const AddCar = () => {
         toast.success("Car Added Successfully 🚗");
         router.push("/my-added-cars");
       } else {
-        toast.error("Failed to add car");
+        const errorData = await res.json();
+        toast.error(errorData.message || "Failed to add car");
       }
     } catch (error) {
       toast.error("Server connection error");

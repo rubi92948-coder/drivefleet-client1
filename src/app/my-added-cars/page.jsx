@@ -4,26 +4,38 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { HiPencilAlt, HiTrash, HiX, HiCheck } from "react-icons/hi";
+import { createAuthClient } from "better-auth/react";
+
+const auth = createAuthClient();
 
 export default function MyAddedCars() {
+  const { data: session } = auth.useSession();
   const [cars, setCars] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editCar, setEditCar] = useState(null);
   const [deleteId, setDeleteId] = useState(null);
 
+  // ডাটা ফেচ করার ফাংশন
+  const fetchMyCars = async () => {
+    if (!session?.user?.email) {
+      setLoading(false);
+      return;
+    }
+    try {
+      const res = await axios.get(
+        `${process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000"}/api/my-cars?email=${session.user.email}`
+      );
+      setCars(res.data || []);
+    } catch (err) {
+      toast.error("Failed to load your cars");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchMyCars = async () => {
-      const storedUser = localStorage.getItem("user");
-      if (!storedUser) { setLoading(false); return; }
-      const user = JSON.parse(storedUser);
-      try {
-        const res = await axios.get(`${process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000"}/api/my-cars/${user.email}`);
-        setCars(res.data || []);
-      } catch (err) { toast.error("Failed to load your cars"); }
-      finally { setLoading(false); }
-    };
     fetchMyCars();
-  }, []);
+  }, [session]);
 
   const handleUpdate = async () => {
     try {
@@ -31,7 +43,9 @@ export default function MyAddedCars() {
       setCars((prev) => prev.map((c) => (c._id === editCar._id ? editCar : c)));
       setEditCar(null);
       toast.success("Updated successfully!");
-    } catch (err) { toast.error("Update failed"); }
+    } catch (err) {
+      toast.error("Update failed");
+    }
   };
 
   const handleDeleteConfirm = async () => {
@@ -40,7 +54,9 @@ export default function MyAddedCars() {
       setCars((prev) => prev.filter((c) => c._id !== deleteId));
       toast.success("Deleted successfully");
       setDeleteId(null);
-    } catch (err) { toast.error("Delete failed"); }
+    } catch (err) {
+      toast.error("Delete failed");
+    }
   };
 
   if (loading) return <div className="min-h-screen flex items-center justify-center text-orange-500 font-bold bg-[#020617]">Loading Fleet...</div>;
@@ -60,7 +76,7 @@ export default function MyAddedCars() {
               <img src={car.image} alt={car.name} className="h-52 w-full object-cover rounded-2xl mb-4" />
               <div className="px-2">
                 <h2 className="text-2xl font-bold mb-1">{car.name}</h2>
-                <p className="text-orange-500 font-medium mb-4">{car.type}</p>
+                <p className="text-orange-500 font-medium mb-4">${car.price}/day</p>
                 <div className="flex gap-3">
                   <button onClick={() => setEditCar(car)} className="flex-1 flex items-center justify-center gap-2 py-3 bg-white/5 hover:bg-white/10 rounded-xl transition-all border border-white/10">
                     <HiPencilAlt /> Edit
@@ -75,10 +91,10 @@ export default function MyAddedCars() {
         </div>
       )}
 
-      {/* Standardized Update Modal */}
+      {/* Edit Modal */}
       {editCar && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center p-4 z-50">
-          <div className="bg-[#0b1221] p-8 rounded-3xl border border-white/10 w-full max-w-2xl shadow-2xl max-h-[90vh] overflow-y-auto">
+          <div className="bg-[#0b1221] p-8 rounded-3xl border border-white/10 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-8">
               <h2 className="text-2xl font-bold">Edit Car</h2>
               <button onClick={() => setEditCar(null)} className="p-2 bg-white/5 rounded-full hover:bg-white/10"><HiX size={24} /></button>
@@ -88,49 +104,40 @@ export default function MyAddedCars() {
               {[ {label: "Car Name", key: "name"}, {label: "Price/Day ($)", key: "price", type: "number"}, {label: "Location", key: "location"} ].map(field => (
                 <div key={field.key} className="flex flex-col gap-1">
                   <label className="text-xs font-semibold text-gray-500 uppercase ml-1">{field.label}</label>
-                  <input type={field.type || "text"} value={editCar[field.key] || ""} onChange={(e) => setEditCar({...editCar, [field.key]: e.target.value})} className="p-4 bg-[#020617] border border-white/10 rounded-2xl focus:border-orange-500 outline-none transition-all" />
+                  <input type={field.type || "text"} value={editCar[field.key] || ""} onChange={(e) => setEditCar({...editCar, [field.key]: e.target.value})} className="p-4 bg-[#020617] border border-white/10 rounded-2xl focus:border-orange-500 outline-none" />
                 </div>
               ))}
-              
               <div className="flex flex-col gap-1">
                 <label className="text-xs font-semibold text-gray-500 uppercase ml-1">Car Type</label>
-                <select value={editCar.type} onChange={(e) => setEditCar({...editCar, type: e.target.value})} className="p-4 bg-[#020617] border border-white/10 rounded-2xl focus:border-orange-500 outline-none transition-all">
+                <select value={editCar.type} onChange={(e) => setEditCar({...editCar, type: e.target.value})} className="p-4 bg-[#020617] border border-white/10 rounded-2xl focus:border-orange-500 outline-none">
                   <option>Supercar</option><option>Luxury</option><option>SUV</option><option>Sports</option>
                 </select>
               </div>
-
               <div className="flex flex-col gap-1 md:col-span-2">
                 <label className="text-xs font-semibold text-gray-500 uppercase ml-1">Image URL</label>
-                <input value={editCar.image || ""} onChange={(e) => setEditCar({...editCar, image: e.target.value})} className="p-4 bg-[#020617] border border-white/10 rounded-2xl focus:border-orange-500 outline-none transition-all" />
+                <input value={editCar.image || ""} onChange={(e) => setEditCar({...editCar, image: e.target.value})} className="p-4 bg-[#020617] border border-white/10 rounded-2xl focus:border-orange-500 outline-none" />
               </div>
-
-              <div className="flex items-center gap-3 md:col-span-2 py-2">
+              <div className="flex items-center gap-3 md:col-span-2">
                 <input type="checkbox" checked={editCar.availability} onChange={(e) => setEditCar({...editCar, availability: e.target.checked})} className="w-5 h-5 accent-orange-500" />
                 <label className="text-sm">Available for Booking</label>
-              </div>
-
-              <div className="flex flex-col gap-1 md:col-span-2">
-                <label className="text-xs font-semibold text-gray-500 uppercase ml-1">Description</label>
-                <textarea value={editCar.description || ""} onChange={(e) => setEditCar({...editCar, description: e.target.value})} className="p-4 bg-[#020617] border border-white/10 rounded-2xl focus:border-orange-500 outline-none transition-all" rows="3" />
               </div>
             </div>
 
             <div className="flex gap-4 mt-10">
               <button onClick={() => setEditCar(null)} className="flex-1 py-4 bg-white/5 rounded-2xl font-bold hover:bg-white/10">Cancel</button>
-              <button onClick={handleUpdate} className="flex-1 py-4 bg-orange-500 rounded-2xl font-bold hover:bg-orange-600 flex items-center justify-center gap-2"><HiCheck size={20}/> Save Changes</button>
+              <button onClick={handleUpdate} className="flex-1 py-4 bg-orange-500 rounded-2xl font-bold hover:bg-orange-600 flex items-center justify-center gap-2"><HiCheck size={20}/> Save</button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Delete Confirmation Modal */}
+      {/* Delete Modal */}
       {deleteId && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50">
           <div className="bg-[#0b1221] p-8 rounded-3xl border border-red-500/20 w-full max-w-sm text-center">
             <div className="w-16 h-16 bg-red-500/10 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6"><HiTrash size={32} /></div>
             <h3 className="text-2xl font-bold mb-2">Delete Car?</h3>
-            <p className="text-gray-400 mb-8">This action is permanent and cannot be undone.</p>
-            <div className="flex gap-4">
+            <div className="flex gap-4 mt-8">
               <button onClick={() => setDeleteId(null)} className="flex-1 py-3 bg-white/5 rounded-xl font-bold hover:bg-white/10">Cancel</button>
               <button onClick={handleDeleteConfirm} className="flex-1 py-3 bg-red-500 rounded-xl font-bold hover:bg-red-600">Delete</button>
             </div>
